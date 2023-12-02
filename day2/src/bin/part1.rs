@@ -76,5 +76,5 @@ fn main() {
         }))    
     }).map(|game| game.id).sum();
 
-    println!("Sum: {}", s);
+    println!("Sum: {}", s); //2505
 }
