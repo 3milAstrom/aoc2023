@@ -1,51 +1,79 @@
 use lib::*;
 
-fn string_to_number(s: &str) -> String {
-    match s {
-        "one" => "1".to_string(),
-        "two" => "2".to_string(),
-        "three" => "3".to_string(),
-        "four" => "4".to_string(),
-        "five" => "5".to_string(),
-        "six" => "6".to_string(),
-        "seven" => "7".to_string(),
-        "eight" => "8".to_string(),
-        "nine" => "9".to_string(),
-        _ => s.parse().expect("to be number"),
+#[derive(Debug, Clone)]
+struct Cube {
+    amount: i32,
+    color: String,
+}
+
+impl Cube {
+    fn parse_from_input(input: &str) -> Self {
+        let parts: Vec<&str> = input.split_whitespace().collect();
+        let a = parts.first().expect("exists").parse::<i32>().expect("is number");
+        let c = parts.last().expect("msg").to_string();
+        Cube {
+            amount: a,
+            color: c,
+        }
     }
 }
 
-fn find_string_number(s: &str) -> Vec<(usize, String)> {
-    let v = vec![
-        "1", "2", "3", "4", "5", "6", "7", "8", "9", "one", "two", "three", "four", "five", "six",
-        "seven", "eight", "nine",
-    ];
+#[derive(Debug, Clone)]
+struct Set {
+    cubes: Vec<Cube>,
+}
 
-    v.into_iter()
-        .map(|f| (s.match_indices(f).collect::<Vec<(usize, &str)>>()))
-        .filter(|f| f.len() > 0)
-        .flatten()
-        .map(|(x, y)| (x, string_to_number(y)))
-        .collect()
+impl Set {
+    fn parse_from_input(input: &str) -> Self {
+        let cubes: Vec<Cube> = input
+            .split(",")
+            .map(|f| Cube::parse_from_input(f))
+            .collect();
+
+        Set { cubes: cubes }
+    }
 }
 
 fn main() {
-    let sv = read_lines("part1.txt");
+    let lines = read_lines("part1.txt");
 
-    let nv: Vec<String> = sv
+    let asd = lines
         .into_iter()
-        .map(|x| {
-            let mut tn = find_string_number(x.as_str());
-            tn.sort_by(|(a1, _), (a2, _)| a1.cmp(a2));
+        .map(|f| {
+            let a: Vec<&str> = f.split(":").collect();
+            let sets: Vec<Set> = a
+                .last()
+                .expect("exists")
+                .split(";")
+                .map(|x| Set::parse_from_input(x))
+                .collect();
 
-            vec![
-                (*tn.first().expect("exists")).clone().1,
-                (*tn.last().expect("exists")).clone().1,
-            ]
-            .join("")
+            let mut r = i32::MIN;
+            let mut g = i32::MIN;
+            let mut b = i32::MIN;
+
+            sets.into_iter().for_each(|x| {
+                x.cubes.into_iter().for_each(|cube| {
+                    let c = cube.color.as_str();
+                    let a = cube.amount;
+                    // dbg!(cube.clone());
+                    if c == "red" && a > r {
+                        r = a;
+                    } else if c == "green" && a > g {
+                        g = a;
+                    } else if c == "blue" && a > b {
+                        b = a;
+                    }
+                })
+            });
+            
+            r*g*b            
         })
-        .collect();
+        .collect::<Vec<i32>>();
 
-    let sum: i32 = nv.iter().map(|f| f.parse::<i32>().expect("to work")).sum();
-    println!("Sum: {}", sum) //54504
+    println!("{:?}", asd);
+
+    let s: i32 = asd.into_iter().sum();
+
+    println!("Sum: {}", s);
 }
