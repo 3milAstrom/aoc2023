@@ -38,10 +38,6 @@ impl Set {
     }
 }
 
-fn parse_sets(s: &str) -> IResult<&str, Vec<Set>> {
-    separated_list0(tag("; "), Set::parse)(s)
-}
-
 #[derive(Debug)]
 struct Game {
     id: i32,
@@ -50,6 +46,7 @@ struct Game {
 
 impl Game {
     fn parse(s: &str) -> IResult<&str, Self> {
+        let parse_sets = separated_list0(tag("; "), Set::parse);
         let parse_game = separated_pair(alpha0, char(' '), parse_numbers);
         let parse_parts = separated_pair(parse_game, tag(": "), parse_sets);
         map(parse_parts, |((_, id), sets)| Game{id, sets} )(s)
