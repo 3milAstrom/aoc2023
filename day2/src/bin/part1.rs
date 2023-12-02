@@ -1,4 +1,17 @@
 use lib::*;
+use nom::{
+    character::complete::{char, digit1, alpha0, alphanumeric0},
+    combinator::{map, map_res},
+    sequence::separated_pair,
+    IResult,
+    bytes::complete::tag, multi::{many0, separated_list0}
+};
+use std::str::FromStr;
+
+pub fn parse_numbers(input: &str) -> IResult<&str, i32> {
+    map_res(digit1, i32::from_str)(input)
+}
+
 
 #[derive(Debug, Clone)]
 struct Cube {
@@ -7,14 +20,9 @@ struct Cube {
 }
 
 impl Cube {
-    fn parse_from_input(input: &str) -> Self {
-        let parts: Vec<&str> = input.split_whitespace().collect();
-        let a = parts.first().expect("exists").parse::<i32>().expect("is number");
-        let c = parts.last().expect("msg").to_string();
-        Cube {
-            amount: a,
-            color: c,
-        }
+    fn parse(s: &str) -> IResult<&str, Self> {
+        let parse_parts = separated_pair(parse_numbers, char(' '), alpha0);
+        map(parse_parts, |(x,y)| Cube{amount: x ,color: y.to_string() })(s)
     }
 }
 
@@ -24,73 +32,49 @@ struct Set {
 }
 
 impl Set {
-    fn parse_from_input(input: &str) -> Self {
-        let cubes: Vec<Cube> = input
-            .split(",")
-            .map(|f| Cube::parse_from_input(f))
-            .collect();
+    fn parse(s: &str) -> IResult<&str, Self> {
+        let parsed_cubes = separated_list0(tag(", "), Cube::parse);
+        map(parsed_cubes, |x| Set{cubes: x})(s)
+    }
+}
 
-        Set { cubes: cubes }
+fn parse_sets(s: &str) -> IResult<&str, Vec<Set>> {
+    separated_list0(tag("; "), Set::parse)(s)
+}
+
+#[derive(Debug)]
+struct Game {
+    id: i32,
+    sets: Vec<Set>,
+}
+
+impl Game {
+    fn parse(s: &str) -> IResult<&str, Self> {
+        let parse_game = separated_pair(alpha0, char(' '), parse_numbers);
+        let parse_parts = separated_pair(parse_game, tag(": "), parse_sets);
+        map(parse_parts, |((_, id), sets)| Game{id, sets} )(s)
     }
 }
 
 fn main() {
     let lines = read_lines("part1.txt");
+    let games: Vec<Game> = lines.into_iter().map(|line| {
+        Game::parse(line.as_str()).expect("").1
+    }).collect();
 
-    let asd = lines
-        .into_iter()
-        .map(|f| {
-            let a: Vec<&str> = f.split(":").collect();
-            let game_id = a
-                .first()
-                .expect("to esist")
-                .split_whitespace()
-                .collect::<Vec<&str>>()
-                .last()
-                .expect("to exist")
-                .parse::<i32>().expect("is number");
-            // dbg!(game_id);
-
-            let game = a.last().expect("to exist");
-            // dbg!(game);
-
-            let sets: Vec<Set> = a
-                .last()
-                .expect("exists")
-                .split(";")
-                .map(|x| Set::parse_from_input(x))
-                .collect();
-            // dbg!(sets.to_vec());
-
-            let r = sets.into_iter().all(|x| {
-                x.cubes.into_iter().all(|cube| {
-                    let c = cube.color.as_str();
-                    // dbg!(cube.clone());
-                    let n = match c {
-                        "red" => 12,
-                        "green" => 13,
-                        "blue" => 14,
-                        _ => panic!()
-                    };
-                    // dbg!(n);
-                    cube.amount <= n                    
-                })
-            });
-
-            // println!("{:?}", r);
-            if r {
-                Some(game_id)
-            } else {
-                None
-            }
-        })
-        .filter(|x| x.is_some())
-        .map(|x| x.unwrap())
-        .collect::<Vec<i32>>();
-
-    println!("{:?}", asd);
-
-    let s: i32 = asd.into_iter().sum();
+    let s: i32 = games.into_iter().filter(|game| {
+        game.sets.clone().into_iter().all(|set| set.cubes.into_iter().all(|cube| {
+            let c = cube.color.as_str();
+            let a = cube.amount;
+            let b = match c {
+                "red" => 12,
+                "green" => 13,
+                "blue" => 14,
+                _ => panic!("Unexpected color")
+            };
+            a <= b
+        }))    
+    }).map(|game| game.id).sum();
 
     println!("Sum: {}", s);
 }
