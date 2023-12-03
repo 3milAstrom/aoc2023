@@ -8,3 +8,4 @@ edition = "2021"
 [dependencies]
 lib = {path = "../lib"}
 nom = "7.0.2"
+regex = "1.10.2"

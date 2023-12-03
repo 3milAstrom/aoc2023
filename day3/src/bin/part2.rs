@@ -1,5 +1,115 @@
 use lib::*;
+use regex::Regex;
+
+#[derive(Debug, Clone)]
+struct NumberRange {
+    x_range: Vec<u32>,
+    number: u32,
+    row: u32,
+}
+
+#[derive(Debug, Clone)]
+struct Sign {
+    x: u32,
+    y: u32,
+}
+
+fn is_adjecent(sign_x: u32, sign_y: u32, n_range: Vec<u32>, row: u32) -> bool {
+    if sign_y == row && (n_range.contains(&(sign_x - 1)) || n_range.contains(&(sign_x + 1))) {
+        return true;
+    } else if (sign_y - 1 == row || sign_y + 1 == row)
+        && (n_range.contains(&sign_x)
+            || n_range.contains(&(sign_x - 1))
+            || n_range.contains(&(sign_x + 1)))
+    {
+        return true;
+    }
+
+    false
+}
 
 fn main() {
     let lines = read_lines("part1.txt");
+    let number_regex = Regex::new(r"([0-9])").unwrap();
+    let mut numbers: Vec<NumberRange> = vec![];
+    let mut signs_vec: Vec<Sign> = vec![];
+
+    lines.iter().enumerate().for_each(|(y, line)| {
+        let signs: std::str::Chars<'_> = line.chars();
+        let mut is_number = false;
+        let mut number_vec: Vec<char> = vec![];
+        let mut number_range: Vec<u32> = vec![];
+
+        signs.enumerate().for_each(|(x, c)| {
+            if !number_regex.is_match(c.to_string().as_str()) {
+                if is_number {
+                    let number = number_vec
+                        .clone()
+                        .into_iter()
+                        .collect::<String>()
+                        .parse::<u32>()
+                        .expect("");
+                    numbers.push(NumberRange {
+                        x_range: number_range.clone(),
+                        row: y as u32,
+                        number: number,
+                    });
+
+                    is_number = false;
+                    number_vec = vec![];
+                    number_range = vec![];
+                }
+
+                if c == '*' {
+                    signs_vec.push(Sign {
+                        x: x as u32,
+                        y: y as u32,
+                    })
+                }
+            } else {
+                if !is_number {
+                    is_number = true;
+                }
+                number_vec.push(c);
+                number_range.push(x as u32);
+
+                if x == line.len() - 1 {
+                    let number = number_vec
+                        .clone()
+                        .into_iter()
+                        .collect::<String>()
+                        .parse::<u32>()
+                        .expect("");
+                    numbers.push(NumberRange {
+                        x_range: number_range.clone(),
+                        row: y as u32,
+                        number: number,
+                    });
+                }
+            }
+        });
+    });
+
+    let sum: u32 = signs_vec
+        .clone()
+        .into_iter()
+        .map(|sign| {
+            numbers
+                .clone()
+                .iter()
+                .filter(|f| is_adjecent(sign.x, sign.y, f.x_range.clone(), f.row))
+                .map(|f| f.number)
+                .collect::<Vec<u32>>()
+        })
+        .filter(|f| f.len() == 2)
+        .map(|f| {
+            let mut p: u32 = 1;
+            for ele in f {
+                p *= ele;
+            }
+            p
+        })
+        .sum::<u32>();
+
+    println!("sum: {}", sum); // 75220503
 }
