@@ -1,10 +1,9 @@
 use lib::*;
 use nom::{
-    branch::alt,
     bytes::complete::tag,
-    character::complete::{alpha0, alphanumeric0, char, digit1},
+    character::complete::{alpha0, digit1},
     combinator::{map, map_res},
-    multi::{many0, separated_list0},
+    multi::{separated_list0},
     sequence::separated_pair,
     IResult,
 };
@@ -55,8 +54,7 @@ fn main() {
     let lines = read_lines("part1.txt");
     let s: u32 = lines
         .into_iter()
-        .enumerate()
-        .map(|(n, line)| {
+        .map(|line| {
             let card = Card::parse(line.as_str()).expect("To be valid card").1;
             card.get_score()
         })
