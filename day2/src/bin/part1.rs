@@ -1,10 +1,10 @@
 use lib::*;
 use nom::{
-    character::complete::{char, digit1, alpha0, alphanumeric0},
+    character::complete::{char, digit1, alpha0},
     combinator::{map, map_res},
     sequence::separated_pair,
     IResult,
-    bytes::complete::tag, multi::{many0, separated_list0}
+    bytes::complete::tag, multi::separated_list0
 };
 use std::str::FromStr;
 
