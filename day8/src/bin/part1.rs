@@ -1,15 +1,6 @@
-use std::{fs, iter::zip, collections::HashMap, cmp::Ordering};
+use std::collections::HashMap;
 
 use lib::*;
-
-
-fn rem_first_and_last(value: String) -> String {
-    let mut chars = value.chars();
-    chars.next();
-    chars.next_back();
-    chars.as_str().to_string()
-}
-
 
 fn main() {
     let lines = read_lines("part1.txt");
@@ -21,36 +12,28 @@ fn main() {
         }
     }).collect::<Vec<bool>>();
 
-    // dbg!(instruction.clone());
-
     let mut map: HashMap<String, (String, String)> = HashMap::new();
-    
 
-    let keys: Vec<String> = lines.iter().skip(2).map(|l| {
+
+    lines.iter().skip(2).for_each(|l| {
         let r = l.replace(" ", "");
         let split1 = r.split("=").map(|c| c.to_string()).collect::<Vec<String>>();
         let key = split1[0].clone();
-        let p2: Vec<String> = rem_first_and_last(split1[1].clone()).split(",").map(|c| c.to_string()).collect();
+        let p2: Vec<String> = split1[1].rm_f_l().clone().split(",").map(|c| c.to_string()).collect();
         map.insert(key.clone(), (p2[0].to_string(), p2[1].to_string()));
-        key
-    }).collect();
+    });
 
-    let mut current: String = "AAA".to_string(); // keys.first().expect("").clone();
-    let last: String = "ZZZ".to_string(); // keys.last().expect("").clone();
+    let mut current: String = "AAA".to_string();
+    let last: String = "ZZZ".to_string();
 
-    // dbg!(map.clone());
-
-    
     let mut found = false;
     let mut i = 0;
     let mut it = instruction.into_iter().cycle();
 
     while !found {
         let right = it.next().expect("").clone();
-
-
         let (l, r) = map.get(&current).unwrap();
-        
+
         if (right && *r == last) || (!right && *l == last){
             found = !found;
         } else if right {
@@ -58,9 +41,9 @@ fn main() {
         } else if !right {
             current = l.clone();
         }
-        i += 1;   
+        i += 1;
     }
 
     println!("{}", i);
-    
+
 }

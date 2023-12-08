@@ -1,14 +1,6 @@
-use std::{fs, iter::{zip, self}, collections::HashMap, cmp::Ordering};
+use std::collections::HashMap;
 use num::integer::lcm;
 use lib::*;
-
-
-fn rem_first_and_last(value: String) -> String {
-    let mut chars = value.chars();
-    chars.next();
-    chars.next_back();
-    chars.as_str().to_string()
-}
 
 fn find_cycle_len(a: String, instruction: Vec<bool>, map: HashMap<String,(String, String)>) -> u64 {
     let mut current =  a.clone();
@@ -45,12 +37,11 @@ fn main() {
 
     let mut map: HashMap<String, (String, String)> = HashMap::new();
 
-
     let keys: Vec<String> = lines.iter().skip(2).map(|l| {
         let r = l.replace(" ", "");
         let split1 = r.split("=").map(|c| c.to_string()).collect::<Vec<String>>();
         let key = split1[0].clone();
-        let p2: Vec<String> = rem_first_and_last(split1[1].clone()).split(",").map(|c| c.to_string()).collect();
+        let p2: Vec<String> = split1[1].rm_f_l().clone().split(",").map(|c| c.to_string()).collect();
         map.insert(key.clone(), (p2[0].to_string(), p2[1].to_string()));
         key
     }).collect();
