@@ -40,10 +40,10 @@ pub fn char_is_number(s: &char) -> bool {
 }
 
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, PartialEq, Eq, Hash)]
 pub struct Point<T> {
-    x: T,
-    y: T
+    pub x: T,
+    pub y: T
 }
 
 impl<T> Point<T>
@@ -63,4 +63,21 @@ where T: std::ops::Sub<Output = T>
         (self.x - p.x).abs() + (self.y - p.y).abs()
     }
 
+}
+
+pub mod vector_ops {
+    use std::ops::AddAssign;
+
+    use itertools::Itertools;
+    use num::{Signed, Integer, Zero};
+    use crate::Point;
+
+    pub fn shoelace<T>(v: Vec<Point<T>>) -> T
+    where T: Signed + Clone + Integer + AddAssign {
+        let mut area: T = Zero::zero();
+        for (p1, p2) in v.into_iter().tuple_windows() {
+            area += (p1.y + p2.y ) * (p1.x - p2.x );
+        }
+        area
+    }
 }
