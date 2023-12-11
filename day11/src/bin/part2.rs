@@ -34,15 +34,10 @@ fn find_empty_cols(g: &Vec<Vec<String>>) -> Vec<usize> {
     columns
 }
 
-fn expand_point(p: (usize, usize), row: &Vec<usize>, col: &Vec<usize>) -> (usize, usize) {
+fn expand_point(p: (usize, usize), row: &Vec<usize>, col: &Vec<usize>) -> Point<i64> {
     let r = p.0 + (col.iter().filter(|x| **x < p.0).count() * (1000000 - 1));
     let c = p.1 + (row.iter().filter(|y| **y < p.1).count() * (1000000 - 1));
-
-    (r, c)
-}
-
-fn m_d(p1: (usize, usize), p2: (usize, usize)) -> usize {
-    (((p1.0 as i32) - (p2.0 as i32)).abs() + ((p1.1 as i32) - (p2.1 as i32)).abs()) as usize
+    Point::new_from_tuple((r as i64, c as i64))
 }
 
 fn main() {
@@ -55,7 +50,7 @@ fn main() {
     let empty_rows = find_empty_rows(&galaxy_map);
     let empty_cols = find_empty_cols(&galaxy_map);
 
-    let mut p_of_i: Vec<(usize, usize)> = vec![];
+    let mut p_of_i: Vec<Point<i64>> = vec![];
 
     for r in 0..galaxy_map.len() {
         let row = &galaxy_map[r];
@@ -69,19 +64,19 @@ fn main() {
         }
     }
 
-    let sum: usize = p_of_i
+    let sum: i64 = p_of_i
         .iter()
         .enumerate()
         .map(|(i, p1)| {
             let r = p_of_i
                 .iter()
                 .enumerate()
-                .filter_map(|(j, p2)| if &j > &i { Some(m_d(*p1, *p2)) } else { None })
-                .collect::<Vec<usize>>();
+                .filter_map(|(j, p2)| if &j > &i { Some(p1.manhattan_distance(*p2)) } else { None })
+                .collect::<Vec<i64>>();
             r
         })
         .flatten()
-        .sum::<usize>();
+        .sum::<i64>();
 
     println!("{}", sum); // 613686987427
 }

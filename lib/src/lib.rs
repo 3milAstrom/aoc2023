@@ -1,4 +1,5 @@
 use std::fs;
+use num::Signed;
 
 pub fn read_file(path: &str) -> String {
     fs::read_to_string(path).expect("Should ba able to read file")
@@ -36,4 +37,30 @@ pub fn is_number(s: String) -> bool {
 
 pub fn char_is_number(s: &char) -> bool {
     is_number(s.to_string())
+}
+
+
+#[derive(Debug, Clone, Copy)]
+pub struct Point<T> {
+    x: T,
+    y: T
+}
+
+impl<T> Point<T>
+where T: std::ops::Sub<Output = T>
+{
+    pub fn new_from_tuple(p: (T,T)) -> Self {
+        Point { x: p.0, y: p.1 }
+    }
+
+    pub fn to_tuple(self) -> (T,T) {
+        (self.x, self.y)
+    }
+
+    pub fn manhattan_distance(self, p: Point<T>) -> T
+    where T: Signed
+    {
+        (self.x - p.x).abs() + (self.y - p.y).abs()
+    }
+
 }
